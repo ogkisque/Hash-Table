@@ -1,7 +1,7 @@
 #include "list.h"
 #include "hashtable.h"
 
-const char* FILE_NAME = "txt/test.txt";
+const char* FILE_NAME = "txt/text.txt";
 
 char* read_file (const char* file_name);
 
@@ -10,15 +10,12 @@ int main ()
     char* buffer = read_file (FILE_NAME);
 
     HashTable hash = {};
-    MAKE_HASH (&hash, 11, get_hash);
-
+    MAKE_HASH (&hash, 23, get_hash);
     hash_fill (&hash, buffer);
 
-    Error error = {};
-    hash_dump (&hash, error);
+    hash_print_info (&hash);
 
     hash_dtor (&hash);  
-
     free (buffer);
 }
 

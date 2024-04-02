@@ -72,21 +72,66 @@ Error hash_fill (HashTable* hash, char* buffer)
     if (!(hash->table))
         RETURN_ERROR_AND_DUMP(hash, NULL_POINTER, "Null pointer of table in hashtable.");
 
-    char word[100] = "";
+    char word[WORD_MAX_SIZE] = "";
     while (*buffer != '\0')
     {
         sscanf (buffer, "%s", word);
         buffer += strlen (word) + 1;
 
-        char* word1 = (char*) calloc (strlen (word), sizeof (char));
-        strcpy (word1, word);
-        size_t hash_val = (hash->hash_func)(word) % hash->size;
-        
-        printf ("%s\n", word);
-
-        Iterator it = {};
-        list_push_end ((hash->table)[hash_val], word1, &it);
+        Error error = hash_add_elem (hash, word);
+        PARSE_ERROR(hash, error);
     }
+
+    RETURN_ERROR(CORRECT, "");
+}
+
+Error hash_add_elem (HashTable* hash, Elemt elem)
+{
+    size_t hash_val = (hash->hash_func)(elem) % hash->size;
+    Iterator it = search_value ((hash->table)[hash_val], elem);
+    if (it.index != -1)
+        RETURN_ERROR(CORRECT, "");
+
+    char* word1 = (char*) calloc (strlen (elem), sizeof (char));
+    if (!word1)
+        RETURN_ERROR(MEM_ALLOC, "Error with allocation memory for string.");
+    
+    strncpy (word1, elem, strlen (elem));
+    list_push_end ((hash->table)[hash_val], word1, &it);
+
+    RETURN_ERROR(CORRECT, "");
+}
+
+Error hash_print_info (HashTable* hash)
+{
+    if (!hash)
+        RETURN_ERROR(NULL_POINTER, "Null pointer of hashtable.");
+
+    if (!(hash->table))
+        RETURN_ERROR(NULL_POINTER, "Null pointer of table in hashtable.");
+
+    size_t size = hash->size;
+    int sum = 0;
+    int sum_val = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+        sum_val += i;
+        sum += get_size ((hash->table)[i]);
+        printf ("List [%lu] - %d elements\n", i, get_size ((hash->table)[i]));
+    }
+
+    float aver = (float) sum / size;
+    printf ("Load factor = %.1f\n", aver);
+
+    float dispersion = 0;
+    for (size_t i = 0; i < size; i++)
+        dispersion += (get_size ((hash->table)[i]) - aver) *
+                      (get_size ((hash->table)[i]) - aver) *
+                      (float) get_size ((hash->table)[i]) / sum;
+
+    printf ("dispersion = %.1f\n", dispersion);
+
+    RETURN_ERROR(CORRECT, "");
 }
 
 void hash_dump (HashTable* hash, Error error)
@@ -122,7 +167,7 @@ void hash_print_error (Error error)
             error.file, error.func, error.line);
 }
 
-size_t get_hash (Elemt str)
+size_t get_hash (Elemt elem)
 {
-    return str[0];
+    return elem[0];
 }

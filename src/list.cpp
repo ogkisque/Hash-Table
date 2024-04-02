@@ -29,7 +29,7 @@ const int   NAME_SIZE       = 50;
 
 struct Node
 {
-    Elemt value;
+    Elemt   value;
     ssize_t next;
     ssize_t prev;
 };
@@ -52,6 +52,7 @@ Error   list_realloc_increase   (List* list);
 Error   list_realloc_decrease   (List* list);
 Error   list_verify             (List* list);
 void    fill_nodes              (List* list, ssize_t start, ssize_t end);
+void    list_dtor_nodes         (List* list);
 #ifdef DOT
 void    list_graph_dump         (List* list, Error error);
 void    dump_nodes              (List* list);
@@ -324,12 +325,31 @@ Error list_dtor (List* list)
     if (!list)
         RETURN_ERROR(NULL_POINTER, "Null pointer of list.");
 
+    list_dtor_nodes (list);
+
     free (list->nodes);
     list->nodes =       NULL;
     list->size =        -1;
     list->free =        -1;
     list->num_elems =   -1;
+    free (list);
     RETURN_ERROR(CORRECT, "");
+}
+
+void list_dtor_nodes (List* list)
+{
+    for (Iterator it1 = begin_it (list), it2 = end_it (list);
+        it1.index != it2.index;
+        it1 = next_it (it1))
+    {
+        Elemt val = 0;
+        get_value (&it1, &val);
+        if (val)
+        {
+            free (val);
+            val = NULL;
+        }
+    }
 }
 
 Error list_verify (List* list)
