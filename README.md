@@ -22,7 +22,7 @@
 *P.S. В общем случае в хеш-таблице хранятся пары ключ-значение и хешируются ключи. В нашем случае будут храниться только ключи, поскольку это не принципиальнои и не является объектом изучения.
 В качестве объектов я буду использовать строки из трагедии Шекспира "Гамлет"*
 
-### Сравнение эффективности различных хtш-функций
+### Сравнение эффективности различных хеш-функций
 
 * **Хеш, всегда равный 0**
 
@@ -90,3 +90,86 @@
     </p>
     
     *load factor = 46; D = 45*
+
+* **Хеш, равный сумме ASCII кодов всех символов, деленной на длину слова**
+
+    ```C++
+    size_t get_hash_aver_ascii (Elemt elem)
+    {
+        size_t sum = get_hash_sum_ascii (elem);
+        size_t len = strlen (elem);
+    
+        return sum / len;
+    }
+    ```
+    Данная функция ограничена (так как это по сути среднее значение ASCII кода символа в слове), поэтому имеет плохие характеристики.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag5.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 142; D = 17700*
+
+* **Хеш, основанный на циклическом сдвиге влево (rol)**
+
+    ```C++
+    size_t get_hash_rol (Elemt elem)
+    {
+        size_t hash = 0;
+        for (int i = 0; elem[i] != '\0'; i++)
+            hash = ROL(hash) ^ elem[i];
+        
+        return hash;
+    }
+    ```
+    Данная функция имеет неплохие характеристики эффективности.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag6.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 46; D = 50*
+
+* **Хеш, основанный на циклическом сдвиге вправо (ror)**
+
+    ```C++
+    size_t get_hash_ror (Elemt elem)
+    {
+        size_t hash = 0;
+        for (int i = 0; elem[i] != '\0'; i++)
+            hash = ROR(hash) ^ elem[i];
+        
+        return hash;
+    }
+    ```
+    Данная функция похожа на предыдущую, однако имеет бОльшую дисперсию.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag7.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 46; D = 84*
+
+* **GNU хеш**
+
+    ```C++
+    size_t get_hash_gnu (Elemt elem)
+    {
+        size_t hash = 5381;
+        for (int i = 0; elem[i] != '\0'; i++)
+            hash = ((hash << 5) + hash) + elem[i];
+    
+        return hash;
+    }
+    ```
+    Данная функция имеет наиболее равномерное распределение среди представленных.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag8.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 46; D = 44*
+
+### Проблема хеша суммы ASCII кодов всех символов
+
+
