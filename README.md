@@ -37,5 +37,56 @@
     <p align = "center">
       <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag1.png" width = 60% height = 60%>
     </p>
+
+    *load factor = 4680; D = 214709*
     
 * **Хеш, равный ASCII коду 1 символа**
+
+    ```C++
+    size_t get_hash_ascii1 (Elemt elem)
+    {
+        return elem[0];
+    }
+    ```
+    Данная функция так же не очень хороша вследствие своей ограниченности (из-за этого многие списки остаются пустыми).
+
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag2.png" width = 60% height = 60%>
+    </p>
+
+    *load factor = 167; D = 10256*
+
+* **Хеш, равный длине строки**
+
+    ```C++
+    size_t get_hash_length (Elemt elem)
+    {
+        return strlen (elem);
+    }
+    ```
+    Данная функция так же является ограниченной.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag3.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 334; D = 27580*
+
+* **Хеш, равный сумме ASCII кодов всех символов**
+
+    ```C++
+    size_t get_hash_sum_ascii (Elemt elem)
+    {
+        size_t sum = 0;
+        for (int i = 0; elem[i] != '\0'; i++)
+            sum += elem[i];
+        return sum;
+    }
+    ```
+    Данная функция более равномерно распределена и имеет хорошие характеристики, однако у неё есть один нюанс, о котором я скажу позже.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag4.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 46; D = 45*
