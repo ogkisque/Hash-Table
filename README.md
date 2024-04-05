@@ -194,7 +194,6 @@
     size_t get_hash_crc32 (Elemt elem)
     {
         unsigned int hash = 0;
-        int len = strlen (elem);
         int size = 8 * sizeof (size_t);
     
         for (int i = 0; elem[i] != '\0'; i++)
