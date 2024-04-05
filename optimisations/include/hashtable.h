@@ -21,7 +21,7 @@ struct HashTable
 
 const size_t LIST_DEF_SIZE = 16;
 const size_t WORD_MAX_SIZE = 100;
-const int    NUM_TESTS     = 100;
+const int    NUM_TESTS     = 500;
 
 Error   hash_ctor           (HashTable* hash, size_t size, size_t (*hash_func) (char*), const char* name, const char* file, const char* func, int line);
 Error   hash_dtor           (HashTable* hash);

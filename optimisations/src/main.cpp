@@ -18,7 +18,7 @@ int main ()
     char** test_words   = parse_buffer  (buffer_test);
     
     HashTable hash = {};
-    MAKE_HASH (&hash, HASHTABLE_SIZE, get_hash_gnu);
+    MAKE_HASH (&hash, HASHTABLE_SIZE, get_hash_crc32);
     hash_fill (&hash, buffer);
 
     hash_test_finding (&hash, test_words, NUM_TEST_WORDS);

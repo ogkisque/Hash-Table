@@ -24,7 +24,7 @@ $(TARGET) : $(OBJ)
 
 $(OBJ_FOLDER)%.o : $(SRC_FOLDER)%.cpp
 	@mkdir -p $(@D)
-	@$(CC) $(IFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) $(IFLAGS) $(CFLAGS) -c -O3 $< -o $@
 
 .PHONY: clean all
 

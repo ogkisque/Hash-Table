@@ -1,10 +1,11 @@
 #include "hashfuncs.h"
 
-size_t get_hash_gnu (Elemt elem)
+size_t get_hash_crc32 (Elemt elem)
 {
-    size_t hash = 5381;
+    unsigned int hash = 0;
+    int size = 8 * sizeof (size_t);
     for (int i = 0; elem[i] != '\0'; i++)
-        hash = ((hash << 5) + hash) + elem[i];
+        hash = crc_table[elem[i] ^ (hash >> (size - 8))] ^ (hash << 8);
 
-    return hash;
+    return (size_t) hash;
 }
