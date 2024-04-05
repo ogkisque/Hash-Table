@@ -150,6 +150,24 @@
     
     *load factor = 46; D = 84*
 
+    Интересно, что циклический сдвиг есть в ассемблере, но нет в си. Скомпилируем функцию ror на сайте [godbolt](https://godbolt.org):
+
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/ror_c.png" width = 60% height = 60%>
+    </p>
+
+    И даже без оптимизаций компилятор заменяет этот код на вызов ассемблерной функции ror:
+
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/ror_asm.png" width = 45% height = 45%>
+    </p>
+
+    С оптимизацией -O3 генерируется следующий код:
+
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/ror_asm_O3.png" width = 30% height = 30%>
+    </p>
+
 * **GNU хеш**
 
     ```C++
