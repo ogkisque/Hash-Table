@@ -162,13 +162,36 @@
         return hash;
     }
     ```
-    Данная функция имеет наиболее равномерное распределение среди представленных.
+    Данная функция имеет хорошее, но не лучшее распределение.
     
     <p align = "center">
       <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag8.png" width = 60% height = 60%>
     </p>
     
     *load factor = 46; D = 44*
+
+* **CRC32 хеш**
+
+    ```C++
+    size_t get_hash_crc32 (Elemt elem)
+    {
+        unsigned int hash = 0;
+        int len = strlen (elem);
+        int size = 8 * sizeof (size_t);
+    
+        for (int i = 0; elem[i] != '\0'; i++)
+            hash = crc_table[elem[i] ^ (hash >> (size - 8))] ^ (hash << 8);
+    
+        return (size_t) hash;
+    }
+    ```
+    Данная функция имеет наиболее равномерное распределение среди представленных.
+    
+    <p align = "center">
+      <img src = "https://github.com/ogkisque/Hash-Table/blob/master/hashtable/data/diag10.png" width = 60% height = 60%>
+    </p>
+    
+    *load factor = 46; D = 41*
 
 ### Проблема хеша суммы ASCII кодов всех символов
 
@@ -185,12 +208,12 @@
 
 Итоговая таблица по эффективности хеш-функций выглядит так:
 
-Хеш-функция | Тождественный 0 | ASCII 1 символа | Длина строки | Сумма ASCII | Средний ASCII | Rol | Ror | GNU 
----         | ---             | ---             | ---          |---          |---            |---  |---  |--- 
-Load factor | 4680            | 167             | 334          | 46          | 142           | 46  | 46  | 46 
-Dispersion  | 214709          | 10256           | 27580        | 45          | 17700         | 50  | 84  | 44 
+Хеш-функция | Тождественный 0 | ASCII 1 символа | Длина строки | Сумма ASCII | Средний ASCII | Rol | Ror | GNU | CRC32 
+---         | ---             | ---             | ---          |---          |---            |---  |---  |---  |---
+Load factor | 4680            | 167             | 334          | 46          | 142           | 46  | 46  | 46  | 46
+Dispersion  | 214709          | 10256           | 27580        | 45          | 17700         | 50  | 84  | 44  | 41
 
-Видно, что лучшим является ```GNU hash```, его я и буду использовать во 2 части проекта.
+Видно, что лучшим является ```CRC32 hash```, его я и буду использовать во 2 части проекта.
 
 ## Часть 2. Оптимизация алгоритмов хеш-таблицы
 
