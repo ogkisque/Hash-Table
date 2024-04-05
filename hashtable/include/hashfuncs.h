@@ -78,6 +78,6 @@ size_t get_hash_aver_ascii  (Elemt elem);
 size_t get_hash_rol         (Elemt elem);
 size_t get_hash_ror         (Elemt elem);
 size_t get_hash_gnu         (Elemt elem);
-size_t get_hash_crc32       (Elemt elem);
+size_t get_hash_crc32       (Elemt elem)
 
 #endif // HASHFUNCS
