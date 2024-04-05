@@ -54,7 +54,6 @@ char** parse_buffer (char* buffer)
 
         char* word1 = (char*) calloc (len, sizeof (char));
         strncpy (word1, word, len);
-        printf ("%s\n", word1);
         words[i] = word1;
     }
 

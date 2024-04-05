@@ -4,7 +4,7 @@
 
 const char*     FILE_NAME       = "txt/text.txt";
 const size_t    HASHTABLE_SIZE  = 101;
-const size_t    HASH_FUNCS_NUM  = 8;
+const size_t    HASH_FUNCS_NUM  = 9;
 
 char* read_file (const char* file_name);
 
@@ -19,7 +19,8 @@ int main ()
                                                     get_hash_aver_ascii,
                                                     get_hash_rol,
                                                     get_hash_ror,
-                                                    get_hash_gnu};
+                                                    get_hash_gnu,
+                                                    get_hash_crc32};
 
     const char* files_csv_name[HASH_FUNCS_NUM] = {  "data/data1.csv",
                                                     "data/data2.csv",
@@ -28,7 +29,8 @@ int main ()
                                                     "data/data5.csv",
                                                     "data/data6.csv",
                                                     "data/data7.csv",
-                                                    "data/data8.csv"};
+                                                    "data/data8.csv",
+                                                    "data/data9.csv"};
     
     for (size_t i = 0; i < HASH_FUNCS_NUM; i++)
     {
@@ -54,5 +56,6 @@ char* read_file (const char* file_name)
 
     char* buffer = (char*) calloc (count + 1, sizeof (char));
     fread (buffer, sizeof (char), count, file);
+    fclose (file);
     return buffer;
 }
