@@ -17,7 +17,7 @@ int main ()
     char*  buffer_test      = read_file     (TEST_FILE_NAME);
     int*   len_test_words   = (int*) calloc (NUM_TEST_WORDS, sizeof (int));
     char** test_words       = parse_buffer  (buffer_test, len_test_words);
-    
+
     HashTable hash = {};
     MAKE_HASH (&hash, HASHTABLE_SIZE, get_hash_crc32);
     hash_fill (&hash, buffer);
@@ -54,7 +54,7 @@ char** parse_buffer (char* buffer, int* len_words)
         int len = strlen (word);
         buffer += len + 1;
 
-        char* word1 = (char*) calloc (len, sizeof (char));
+        char* word1 = (char*) calloc (len + 1, sizeof (char));
         strncpy (word1, word, len);
         words[i] = word1;
         len_words[i] = len;

@@ -15,7 +15,26 @@ typedef char* Elemt;
         make_list (list, start_size, need_realloc_inc, need_realloc_dec, #list, __FILE__, __func__, __LINE__)
 #define DOT
 
-struct List;
+struct Node
+{
+    Elemt   value;
+    ssize_t next;
+    ssize_t prev;
+};
+
+struct List
+{
+    Node*       nodes;
+    ssize_t     free;
+    int         size;
+    int         num_elems;
+    bool        is_realloc_inc;
+    bool        is_realloc_dec;
+    const char* name;
+    const char* file;
+    const char* func;
+    int         line;
+};
 
 struct Iterator
 {
@@ -23,7 +42,8 @@ struct Iterator
     List* list;
 };
 
-Iterator    search_value    (List* list, Elemt value);
+int         my_strcmp       (const char* str1, const char* str2);
+bool        search_value    (List* list, Elemt value);
 Iterator    prev_it         (Iterator it);
 Iterator    next_it         (Iterator it);
 Iterator    begin_it        (List* list);

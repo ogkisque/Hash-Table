@@ -27,27 +27,6 @@ const int   MAX_TEXT_SIZE   = 200;
 const int   REALLOC_STEP    = 2;
 const int   NAME_SIZE       = 50;
 
-struct Node
-{
-    Elemt   value;
-    ssize_t next;
-    ssize_t prev;
-};
-
-struct List
-{
-    Node*       nodes;
-    ssize_t     free;
-    int         size;
-    int         num_elems;
-    bool        is_realloc_inc;
-    bool        is_realloc_dec;
-    const char* name;
-    const char* file;
-    const char* func;
-    int         line;
-};
-
 Error   list_realloc_increase   (List* list);
 Error   list_realloc_decrease   (List* list);
 Error   list_verify             (List* list);
@@ -184,22 +163,78 @@ Error list_realloc_decrease (List* list)
     RETURN_ERROR(CORRECT, "");
 }
 
-Iterator search_value (List* list, Elemt value)
+bool search_value (List* list, Elemt value)
 {
-    Iterator ans = {-1, list};
-    for (Iterator it1 = begin_it (list), it2 = end_it (list);
-        it1.index != it2.index;
-        it1 = next_it (it1))
+    int last_index = list->num_elems;
+    for (int i = 1; i < last_index; i++)
     {
-        Elemt val = get_value (&it1);
-        if (strcmp (val, value) == 0)
-        {
-            ans = it1;
-            break;
-        }
+        unsigned long long equal = 0;
+        asm volatile(
+        ".intel_syntax noprefix\n\t"
+        "movq rsi, %1\n\t"
+        "movq rdi, %2\n\t"
+        ".next:\n"
+            "mov r11b, byte ptr [rsi]\n"
+            "mov r10b, byte ptr [rdi]\n"
+    	    "cmp r10b, 0\n"
+    	    "je .end\n"
+    	    "cmp r11b, 0\n"
+    	    "je .end\n"
+    	    "cmp r11b, r10b\n"
+    	    "jne .end\n"
+    	    "inc rdi\n"
+    	    "inc rsi\n"
+    	    "jmp .next\n"
+        ".end:\n"
+            "xor rax, rax\n"
+            "xor rbx, rbx\n"
+            "movzx rax, r10b\n"
+            "movzx rbx, r11b\n"
+    	    "sub rax, rbx\n"
+            "movq %0, rax\n"
+        ".att_syntax"
+        : "=r" (equal)
+        : "r" (list->nodes[i].value), "r" (value)
+        : "rax", "rbx", "rsi", "rdi", "r10", "r11"
+        );
+        
+        if (equal == 0)
+            return true;
     }
+    return false;
+}
 
-    return ans;
+int my_strcmp (const char* str1, const char* str2)
+{
+    int result = 0;
+    asm(
+        ".intel_syntax noprefix\n\t"
+        "movq rsi, %1\n\t"
+        "movq rdi, %2\n\t"
+        ".Next:\n"
+            "mov r11b, byte ptr [rsi]\n"
+            "mov r10b, byte ptr [rdi]\n"
+    	    "cmp r10b, 0\n"
+    	    "je .done\n"
+    	    "cmp r11b, 0\n"
+    	    "je .done\n"
+    	    "cmp r11b, r10b\n"
+    	    "jne .done\n"
+    	    "inc rdi\n"
+    	    "inc rsi\n"
+    	    "jmp .Next\n"
+        ".done:\n"
+            "xor rax, rax\n"
+            "xor rbx, rbx\n"
+            "movzx rax, r10b\n"
+            "movzx rbx, r11b\n"
+    	    "sub rax, rbx\n"
+        ".att_syntax"
+        : "=r" (result)
+        : "r" (str1), "r" (str2)
+        : "rax", "rbx", "rsi", "rdi", "r10", "r11"
+    );
+    return result;
 }
 
 Iterator prev_it (Iterator it)

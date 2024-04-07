@@ -90,15 +90,15 @@ Error hash_add_elem (HashTable* hash, Elemt elem)
 {
     unsigned int len = strlen (elem);
     size_t hash_val = asm_get_hash_crc32(elem, len) % hash->size;
-    Iterator it = search_value ((hash->table)[hash_val], elem);
-    if (it.index != -1)
+    if (search_value ((hash->table)[hash_val], elem))
         RETURN_ERROR(CORRECT, "");
 
-    char* word1 = (char*) calloc (len, sizeof (char));
+    char* word1 = (char*) calloc (len + 1, sizeof (char));
     if (!word1)
         RETURN_ERROR(MEM_ALLOC, "Error with allocation memory for string.");
     
     strncpy (word1, elem, len);
+    Iterator it = {};
     list_push_end ((hash->table)[hash_val], word1, &it);
 
     RETURN_ERROR(CORRECT, "");
@@ -107,8 +107,7 @@ Error hash_add_elem (HashTable* hash, Elemt elem)
 bool hash_find_elem (HashTable* hash, Elemt elem, int len)
 {
     size_t hash_val = asm_get_hash_crc32(elem, (unsigned int) len) % hash->size;
-    Iterator it = search_value ((hash->table)[hash_val], elem);
-    return it.index != -1;
+    return search_value ((hash->table)[hash_val], elem);
 }
 
 void hash_test_finding (HashTable* hash, char** words, int num_words, int* len_words)
