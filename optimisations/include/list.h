@@ -28,7 +28,7 @@ Iterator    prev_it         (Iterator it);
 Iterator    next_it         (Iterator it);
 Iterator    begin_it        (List* list);
 Iterator    end_it          (List* list);
-Error       get_value       (Iterator* it, Elemt* value);
+Elemt       get_value       (Iterator* it);
 Error       set_value       (Iterator* it, Elemt value);
 Error       list_push_begin (List* list, Elemt value, Iterator* it);
 Error       list_push_end   (List* list, Elemt value, Iterator* it);

@@ -29,7 +29,7 @@ void    hash_dump           (HashTable* hash, Error error);
 void    hash_print_error    (Error error);
 Error   hash_fill           (HashTable* hash, char* buffer);
 Error   hash_add_elem       (HashTable* hash, Elemt elem);
-bool    hash_find_elem      (HashTable* hash, Elemt elem);
-void    hash_test_finding   (HashTable* hash, char** words, int num_words);
+bool    hash_find_elem      (HashTable* hash, Elemt elem, int len);
+void    hash_test_finding   (HashTable* hash, char** words, int num_words, int* len_words);
 
 #endif // HASHTABLE

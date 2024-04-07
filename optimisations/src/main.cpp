@@ -8,24 +8,26 @@ const size_t    HASHTABLE_SIZE  = 997;
 const int       NUM_TEST_WORDS  = 105911;
 
 char*   read_file       (const char* file_name);
-char**  parse_buffer    (char* buffer);
+char**  parse_buffer    (char* buffer, int* len_words);
 void    words_dtor      (char** words);
 
 int main ()
 {
-    char*  buffer       = read_file     (FILE_NAME);
-    char*  buffer_test  = read_file     (TEST_FILE_NAME);
-    char** test_words   = parse_buffer  (buffer_test);
+    char*  buffer           = read_file     (FILE_NAME);
+    char*  buffer_test      = read_file     (TEST_FILE_NAME);
+    int*   len_test_words   = (int*) calloc (NUM_TEST_WORDS, sizeof (int));
+    char** test_words       = parse_buffer  (buffer_test, len_test_words);
     
     HashTable hash = {};
     MAKE_HASH (&hash, HASHTABLE_SIZE, get_hash_crc32);
     hash_fill (&hash, buffer);
 
-    hash_test_finding (&hash, test_words, NUM_TEST_WORDS);
+    hash_test_finding (&hash, test_words, NUM_TEST_WORDS, len_test_words);
 
     hash_dtor (&hash);
     words_dtor (test_words);
     free (buffer);
+    free (len_test_words);
 }
 
 char* read_file (const char* file_name)
@@ -41,7 +43,7 @@ char* read_file (const char* file_name)
     return buffer;
 }
 
-char** parse_buffer (char* buffer)
+char** parse_buffer (char* buffer, int* len_words)
 {
     char word[WORD_MAX_SIZE] = "";
     char** words = (char**) calloc (NUM_TEST_WORDS, sizeof (char*));
@@ -55,6 +57,7 @@ char** parse_buffer (char* buffer)
         char* word1 = (char*) calloc (len, sizeof (char));
         strncpy (word1, word, len);
         words[i] = word1;
+        len_words[i] = len;
     }
 
     return words;

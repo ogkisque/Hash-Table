@@ -1,4 +1,5 @@
 CC = g++
+ASMC = nasm
 CFLAGS = -g -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations\
 -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported\
 -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness\
@@ -16,17 +17,23 @@ IFLAGS = -I./include/
 SRC_FOLDER = ./src/
 OBJ_FOLDER = ./build/
 
+ASM = ./src/crc32.asm
+ASM_O = ./build/crc32.o
+
 SRC = $(wildcard $(SRC_FOLDER)*.cpp)
 OBJ = $(patsubst $(SRC_FOLDER)%.cpp, $(OBJ_FOLDER)%.o, $(SRC))
 
-$(TARGET) : $(OBJ)
-	@$(CC) $(IFLAGS) $(CFLAGS) $(OBJ) -o $(TARGET)
+$(TARGET) : $(OBJ) $(ASM_O)
+	@$(CC) $(IFLAGS) $(CFLAGS) $(OBJ) $(ASM_O) -o $(TARGET)
 
 $(OBJ_FOLDER)%.o : $(SRC_FOLDER)%.cpp
 	@mkdir -p $(@D)
-	@$(CC) $(IFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) $(IFLAGS) $(CFLAGS) -c -O3 $< -o $@
 
+$(ASM_O): $(ASM)
+	$(ASMC) -f elf64 $(ASM) -o $(ASM_O)
+	
 .PHONY: clean all
 
 clean:
-	rm $(TARGET) $(OBJ)
+	rm $(TARGET) $(OBJ) $(ASM_O)

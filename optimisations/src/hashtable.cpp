@@ -16,6 +16,8 @@
             return error;                   \
         }
 
+extern "C" unsigned int asm_get_hash_crc32 (char* str, unsigned int len);
+
 Error hash_ctor (HashTable* hash, size_t size, size_t (*hash_func) (char*), const char* name, const char* file, const char* func, int line)
 {
     if (!hash)
@@ -86,33 +88,34 @@ Error hash_fill (HashTable* hash, char* buffer)
 
 Error hash_add_elem (HashTable* hash, Elemt elem)
 {
-    size_t hash_val = (hash->hash_func)(elem) % hash->size;
+    unsigned int len = strlen (elem);
+    size_t hash_val = asm_get_hash_crc32(elem, len) % hash->size;
     Iterator it = search_value ((hash->table)[hash_val], elem);
     if (it.index != -1)
         RETURN_ERROR(CORRECT, "");
 
-    char* word1 = (char*) calloc (strlen (elem), sizeof (char));
+    char* word1 = (char*) calloc (len, sizeof (char));
     if (!word1)
         RETURN_ERROR(MEM_ALLOC, "Error with allocation memory for string.");
     
-    strncpy (word1, elem, strlen (elem));
+    strncpy (word1, elem, len);
     list_push_end ((hash->table)[hash_val], word1, &it);
 
     RETURN_ERROR(CORRECT, "");
 }
 
-bool hash_find_elem (HashTable* hash, Elemt elem)
+bool hash_find_elem (HashTable* hash, Elemt elem, int len)
 {
-    size_t hash_val = (hash->hash_func)(elem) % hash->size;
+    size_t hash_val = asm_get_hash_crc32(elem, (unsigned int) len) % hash->size;
     Iterator it = search_value ((hash->table)[hash_val], elem);
     return it.index != -1;
 }
 
-void hash_test_finding (HashTable* hash, char** words, int num_words)
+void hash_test_finding (HashTable* hash, char** words, int num_words, int* len_words)
 {
     for (int i = 0; i < num_words; i++)
         for (int j = 0; j < NUM_TESTS; j++)
-            hash_find_elem (hash, words[i]);
+            hash_find_elem (hash, words[i], len_words[i]);
 }
 
 void hash_dump (HashTable* hash, Error error)

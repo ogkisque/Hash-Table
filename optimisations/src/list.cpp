@@ -191,8 +191,7 @@ Iterator search_value (List* list, Elemt value)
         it1.index != it2.index;
         it1 = next_it (it1))
     {
-        Elemt val = 0;
-        get_value (&it1, &val);
+        Elemt val = get_value (&it1);
         if (strcmp (val, value) == 0)
         {
             ans = it1;
@@ -223,19 +222,9 @@ Iterator end_it (List* list)
     return Iterator {0, list};
 }
 
-Error get_value (Iterator* it, Elemt* value)
+Elemt get_value (Iterator* it)
 {
-    if (it->index <= 0 || it->index >= it->list->size || it->list->nodes[it->index].prev == -1)
-        RETURN_ERROR_AND_DUMP(it->list, INCOR_POS, "Incorrect index.");
-
-    if (!value)
-        RETURN_ERROR_AND_DUMP(it->list, NULL_POINTER, "Null pointer of value.");
-
-    if (!it)
-        RETURN_ERROR_AND_DUMP(it->list, NULL_POINTER, "Null pointer of iterator.");
-
-    *value = it->list->nodes[it->index].value;
-    RETURN_ERROR(CORRECT, "");
+    return it->list->nodes[it->index].value;
 }
 
 Error set_value (Iterator* it, Elemt value)
@@ -342,8 +331,7 @@ void list_dtor_nodes (List* list)
         it1.index != it2.index;
         it1 = next_it (it1))
     {
-        Elemt val = 0;
-        get_value (&it1, &val);
+        Elemt val = get_value (&it1);
         if (val)
         {
             free (val);
