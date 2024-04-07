@@ -234,3 +234,61 @@ Dispersion  | 214709          | 10256           | 27580        | 45          | 1
 
 ## Часть 2. Оптимизация алгоритмов хеш-таблицы
 
+### Отсутствие оптимизаций
+
+Для поиска "горячих точек" программы я использую профилировщик ```callgrind```, который показывает время выполнения каждой функции из программы.
+Наша задача - оптимизировать  функцию, в которой происходит много поисков слов в хеш-таблице - ```hash_test_finding```.
+Так выглядит листинг callgrind без каких-либо оптимизаций:
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt0main.png" width = 60% height = 60%>
+</p>
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt0.png" width = 60% height = 60%>
+</p>
+
+### Отключение обработки ошибок и включение -O3
+
+Не будем больше обрабатывать ошибки и добавим флаг компиляции -O3. Тогда мы получим  серьёзное ускорение программы:
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt1main.png" width = 60% height = 60%>
+</p>
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt1.png" width = 60% height = 60%>
+</p>
+
+Эти результаты будут нашим ```base line```, то есть с ними мы будем сравнивать дальнейшие оптимизации.
+
+### Оптимизация 1. Функция на ассемблере
+
+Исходя из предыдущего листинга видно, что функция ```get_hash_crc32``` вносит большой вклад во время выполнения. Перепишем её на языке ассемблера и вспомним, что в нём существует готовая функция crc32. Её мы и будем использовать:
+
+```C++
+section .text
+global asm_get_hash_crc32
+
+asm_get_hash_crc32:
+    mov eax, 0
+    mov r11, 0 
+    .loop:
+        crc32 eax, byte [rdi+r11]
+        inc r11
+        cmp r11, rsi
+        jne .loop
+    ret
+```
+
+Функция принимает не только строку, но и её длину. Чтобы не тратить время на вызовы ```strlen``` во время поиска слов, посчитаем длины слов заранее, на этапе парсинга.
+
+В итоге мы получаем неплохой  прирост скорости:
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt2main.png" width = 60% height = 60%>
+</p>
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt2.png" width = 60% height = 60%>
+</p>
