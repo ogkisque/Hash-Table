@@ -292,3 +292,70 @@ asm_get_hash_crc32:
 <p align = "center">
   <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt2.png" width = 60% height = 60%>
 </p>
+
+### Оптимизация 2. Ассемблерная вставка
+
+Осталось 2 функции для оптимизации - ```search_value``` и вызываемая в ней ```strcmp```.
+
+Заметим, что в этой задаче в списках нет вставок не в середину, удалений и прочего: все элементы вставляются в конец. Поэтому не имеет смысла перебирать итераторы, используя функцию ```next_it```. Будем просто перебирать элементы по очереди с 1 по последний.
+
+Так же попробуем ускорить strcmp путём замены его на ассемблерную вставку:
+
+```C++
+bool search_value (List* list, Elemt value)
+{
+    int last_index = list->num_elems;
+    for (int i = 1; i < last_index; i++)
+    {
+        unsigned long long equal = 0;
+        asm volatile(
+        ".intel_syntax noprefix\n\t"
+        "movq rsi, %1\n\t"
+        "movq rdi, %2\n\t"
+        ".next:\n"
+            "mov r11b, byte ptr [rsi]\n"
+            "mov r10b, byte ptr [rdi]\n"
+    	    "cmp r10b, 0\n"
+    	    "je .end\n"
+    	    "cmp r11b, 0\n"
+    	    "je .end\n"
+    	    "cmp r11b, r10b\n"
+    	    "jne .end\n"
+    	    "inc rdi\n"
+    	    "inc rsi\n"
+    	    "jmp .next\n"
+        ".end:\n"
+            "xor rax, rax\n"
+            "xor rbx, rbx\n"
+            "movzx rax, r10b\n"
+            "movzx rbx, r11b\n"
+    	    "sub rax, rbx\n"
+            "movq %0, rax\n"
+        ".att_syntax"
+        : "=r" (equal)
+        : "r" (list->nodes[i].value), "r" (value)
+        : "rax", "rbx", "rsi", "rdi", "r10", "r11"
+        );
+        
+        if (equal == 0)
+            return true;
+    }
+    return false;
+}
+```
+
+В итоге получаем следующий листинг:
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt3main.png" width = 60% height = 60%>
+</p>
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt3.png" width = 60% height = 60%>
+</p>
+
+То есть ускорение есть, но крайне небольшое.
+
+### Оптимизация 3. SIMD инструкции
+
+
