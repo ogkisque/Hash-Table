@@ -358,4 +358,35 @@ bool search_value (List* list, Elemt value)
 
 ### Оптимизация 3. SIMD инструкции
 
+Попробуем ускорить strcmp по другому - через SIMD инструкции.
 
+Длина слова в нашем тексте не превосходит 15. Поэтому вместо char* для их хранения можно использовать __m128i.
+
+Тогда вместо strcmp можно вызывать ```intrinsic``` функцию для сравнения векторов - ```_mm_testnzc_si128```:
+
+```C++
+bool search_value (List* list, Elemt value)
+{
+    int last_index = list->num_elems;
+    
+    for (int i = 1; i < last_index; i++)
+        if (_mm_testnzc_si128 (value, list->nodes[i].value) == 0)
+            return true;
+
+    return false;
+}
+```
+
+Это даёт следующие результаты:
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/maоster/optimisations/data/opt4main.png" width = 60% height = 60%>
+</p>
+
+<p align = "center">
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt4.png" width = 60% height = 60%>
+</p>
+
+Таким образом, мы получили значительное ускорение.
+
+### Подведение итогов
