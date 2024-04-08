@@ -380,7 +380,7 @@ bool search_value (List* list, Elemt value)
 Это даёт следующие результаты:
 
 <p align = "center">
-  <img src = "https://github.com/ogkisque/Hash-Table/blob/maоster/optimisations/data/opt4main.png" width = 60% height = 60%>
+  <img src = "https://github.com/ogkisque/Hash-Table/blob/master/optimisations/data/opt4main.png" width = 60% height = 60%>
 </p>
 
 <p align = "center">
