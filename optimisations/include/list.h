@@ -5,11 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <smmintrin.h>
+#include <emmintrin.h>
+#include <stdint.h>
 
 #include "colors.h"
 #include "error.h"
 
-typedef char* Elemt;
+typedef __m128i Elemt;
 
 #define MAKE_LIST(list, start_size, need_realloc_inc, need_realloc_dec) \
         make_list (list, start_size, need_realloc_inc, need_realloc_dec, #list, __FILE__, __func__, __LINE__)
@@ -42,7 +45,6 @@ struct Iterator
     List* list;
 };
 
-int         my_strcmp       (const char* str1, const char* str2);
 bool        search_value    (List* list, Elemt value);
 Iterator    prev_it         (Iterator it);
 Iterator    next_it         (Iterator it);
@@ -62,5 +64,6 @@ Error       list_dtor       (List* list);
 int         get_size        (List* list);
 void        list_dump       (List* list, Error error);
 void        list_print_error(Error error);
+void        print_m128      (__m128i elem);
 
 #endif //LIST_HEADER

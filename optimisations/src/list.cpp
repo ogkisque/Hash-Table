@@ -31,7 +31,6 @@ Error   list_realloc_increase   (List* list);
 Error   list_realloc_decrease   (List* list);
 Error   list_verify             (List* list);
 void    fill_nodes              (List* list, ssize_t start, ssize_t end);
-void    list_dtor_nodes         (List* list);
 #ifdef DOT
 void    list_graph_dump         (List* list, Error error);
 void    dump_nodes              (List* list);
@@ -59,7 +58,7 @@ Error list_insert (List* list, Elemt value, ssize_t pos, Iterator* it)
 
     ssize_t new_next = (list->nodes)[list->free].next;
 
-    list->nodes[list->free].value = value;
+    list->nodes[list->free].value = _mm_loadu_si128 (&value);
 
     list->nodes[list->free].next = pos;
     list->nodes[list->free].prev = list->nodes[pos].prev;
@@ -101,8 +100,7 @@ Error list_erase (List* list, ssize_t pos, Iterator* it)
     it->index = list->nodes[pos].next;
     it->list  = list;
 
-    free (list->nodes[pos].value);
-    list->nodes[pos].value = NULL;
+    list->nodes[pos].value = _mm_setzero_si128 ();
     list->nodes[list->nodes[pos].prev].next = list->nodes[pos].next;
     list->nodes[list->nodes[pos].next].prev = list->nodes[pos].prev;
 
@@ -147,7 +145,7 @@ Error list_realloc_decrease (List* list)
     for (ssize_t i = old_list->nodes[0].next; i != 0; i = old_list->nodes[i].next)
     {
         num++;
-        list->nodes[num].value =    old_list->nodes[i].value;
+        list->nodes[num].value =    _mm_loadu_si128 (&(old_list->nodes[i].value));
         list->nodes[num].prev =     num - 1;
         list->nodes[num].next =     num + 1;
     }
@@ -166,75 +164,12 @@ Error list_realloc_decrease (List* list)
 bool search_value (List* list, Elemt value)
 {
     int last_index = list->num_elems;
+    
     for (int i = 1; i < last_index; i++)
-    {
-        unsigned long long equal = 0;
-        asm volatile(
-        ".intel_syntax noprefix\n\t"
-        "movq rsi, %1\n\t"
-        "movq rdi, %2\n\t"
-        ".next:\n"
-            "mov r11b, byte ptr [rsi]\n"
-            "mov r10b, byte ptr [rdi]\n"
-    	    "cmp r10b, 0\n"
-    	    "je .end\n"
-    	    "cmp r11b, 0\n"
-    	    "je .end\n"
-    	    "cmp r11b, r10b\n"
-    	    "jne .end\n"
-    	    "inc rdi\n"
-    	    "inc rsi\n"
-    	    "jmp .next\n"
-        ".end:\n"
-            "xor rax, rax\n"
-            "xor rbx, rbx\n"
-            "movzx rax, r10b\n"
-            "movzx rbx, r11b\n"
-    	    "sub rax, rbx\n"
-            "movq %0, rax\n"
-        ".att_syntax"
-        : "=r" (equal)
-        : "r" (list->nodes[i].value), "r" (value)
-        : "rax", "rbx", "rsi", "rdi", "r10", "r11"
-        );
-        
-        if (equal == 0)
+        if (_mm_testnzc_si128 (value, list->nodes[i].value) == 0)
             return true;
-    }
-    return false;
-}
 
-int my_strcmp (const char* str1, const char* str2)
-{
-    int result = 0;
-    asm(
-        ".intel_syntax noprefix\n\t"
-        "movq rsi, %1\n\t"
-        "movq rdi, %2\n\t"
-        ".Next:\n"
-            "mov r11b, byte ptr [rsi]\n"
-            "mov r10b, byte ptr [rdi]\n"
-    	    "cmp r10b, 0\n"
-    	    "je .done\n"
-    	    "cmp r11b, 0\n"
-    	    "je .done\n"
-    	    "cmp r11b, r10b\n"
-    	    "jne .done\n"
-    	    "inc rdi\n"
-    	    "inc rsi\n"
-    	    "jmp .Next\n"
-        ".done:\n"
-            "xor rax, rax\n"
-            "xor rbx, rbx\n"
-            "movzx rax, r10b\n"
-            "movzx rbx, r11b\n"
-    	    "sub rax, rbx\n"
-        ".att_syntax"
-        : "=r" (result)
-        : "r" (str1), "r" (str2)
-        : "rax", "rbx", "rsi", "rdi", "r10", "r11"
-    );
-    return result;
+    return false;
 }
 
 Iterator prev_it (Iterator it)
@@ -270,7 +205,7 @@ Error set_value (Iterator* it, Elemt value)
     if (!it)
         RETURN_ERROR_AND_DUMP(it->list, NULL_POINTER, "Null pointer of iterator.");
 
-    strcpy (it->list->nodes[it->index].value, value);
+    it->list->nodes[it->index].value = _mm_loadu_si128 (&value);
     RETURN_ERROR(CORRECT, "");
 }
 
@@ -331,7 +266,7 @@ Error list_ctor (List* list, int start_size, bool need_realloc_inc, bool need_re
 
     fill_nodes (list, 1, list->size);
 
-    list->nodes[0].value =  NULL;
+    list->nodes[0].value =  _mm_setzero_si128 ();
     list->nodes[0].next =   0;
     list->nodes[0].prev =   0;
     list->free =            1;
@@ -349,8 +284,6 @@ Error list_dtor (List* list)
     if (!list)
         RETURN_ERROR(NULL_POINTER, "Null pointer of list.");
 
-    list_dtor_nodes (list);
-
     free (list->nodes);
     list->nodes =       NULL;
     list->size =        -1;
@@ -360,26 +293,10 @@ Error list_dtor (List* list)
     RETURN_ERROR(CORRECT, "");
 }
 
-void list_dtor_nodes (List* list)
-{
-    for (Iterator it1 = begin_it (list), it2 = end_it (list);
-        it1.index != it2.index;
-        it1 = next_it (it1))
-    {
-        Elemt val = get_value (&it1);
-        if (val)
-        {
-            free (val);
-            val = NULL;
-        }
-    }
-}
-
 Error list_verify (List* list)
 {
     if (!list)                                          RETURN_ERROR(NULL_POINTER,      "Null pointer of list.");
     if (!(list->nodes))                                 RETURN_ERROR(NULL_POINTER,      "Null pointer of nodes.");
-    if (list->nodes[0].value != NULL)                   RETURN_ERROR(INCOR_ZERO_ELEM,   "Zero element in nodes is not INT_MAX.");
     if (prev_of_next (list))                            RETURN_ERROR(PREV_OF_NEXT,      "Previous element of next element is not equal to the current one");
     if (is_cycles (list))                               RETURN_ERROR(CYCLES,            "There are cycles in list.");
     if (list->num_elems >= list->size)                  RETURN_ERROR(ELEMS_MORE_SIZE,   "There are more elements in the list than its size");
@@ -533,6 +450,15 @@ void fill_nodes (List* list, ssize_t start, ssize_t end)
     {
         list->nodes[i].next =  i + 1;
         list->nodes[i].prev =  -1;
-        list->nodes[i].value = 0;
+        list->nodes[i].value = _mm_setzero_si128 ();
     }
+}
+
+void print_m128 (__m128i elem)
+{
+    uint8_t val[16] = {};
+    memcpy (val, &elem, sizeof (val));
+    for (int i = 0; i < 16; i++)
+        printf ("%c", val[i]);
+    printf ("\n");
 }

@@ -28,7 +28,7 @@ $(TARGET) : $(OBJ) $(ASM_O)
 
 $(OBJ_FOLDER)%.o : $(SRC_FOLDER)%.cpp
 	@mkdir -p $(@D)
-	@$(CC) $(IFLAGS) $(CFLAGS) -c -O3 $< -o $@
+	@$(CC) $(IFLAGS) $(CFLAGS) -c -O3 -mavx $< -o $@
 
 $(ASM_O): $(ASM)
 	$(ASMC) -f elf64 $(ASM) -o $(ASM_O)
