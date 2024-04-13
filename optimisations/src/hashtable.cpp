@@ -18,7 +18,7 @@
 
 extern "C" unsigned int asm_get_hash_crc32 (unsigned char* elem, int len);
 
-Error hash_ctor (HashTable* hash, size_t size, unsigned int (*hash_func) (Elemt), const char* name, const char* file, const char* func, int line)
+Error hash_ctor (HashTable* hash, size_t size, unsigned int (*hash_func) (unsigned char*), const char* name, const char* file, const char* func, int line)
 {
     if (!hash)
         RETURN_ERROR_AND_DUMP(hash, NULL_POINTER, "Null pointer of hashtable.");
@@ -93,7 +93,7 @@ Error hash_add_elem (HashTable* hash, Elemt elem, int len)
     RETURN_ERROR(CORRECT, "");
 }
 
-bool hash_find_elem (HashTable* hash, Elemt elem, int len)
+inline bool hash_find_elem (HashTable* hash, Elemt elem, int len)
 {
     size_t hash_val = asm_get_hash_crc32((unsigned char*) &elem, len) % hash->size;
     return search_value ((hash->table)[hash_val], elem);

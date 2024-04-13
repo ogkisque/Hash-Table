@@ -70,6 +70,6 @@ const unsigned int crc_table[256] = {
     0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4,
 };
 
-unsigned int get_hash_crc32 (Elemt elem);
+unsigned int get_hash_crc32 (unsigned char* elem);
 
 #endif // HASHFUNCS
