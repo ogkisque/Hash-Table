@@ -6,7 +6,7 @@
 
 const char*     FILE_NAME       = "txt/text.txt";
 const char*     TEST_FILE_NAME  = "txt/test.txt";
-const size_t    HASHTABLE_SIZE  = 997;
+const size_t    HASHTABLE_SIZE  = 3557;
 const int       NUM_TEST_WORDS  = 105911;
 const int       NUM_WORDS       = 31009;
 
